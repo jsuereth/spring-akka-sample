@@ -8,6 +8,10 @@ import akka.actor._
 import scala.collection.JavaConverters._
 import javax.annotation.PostConstruct
 
+import akka.pattern.ask
+import akka.dispatch.Await
+
+
 @Service
 @Singleton
 class AkkaSearchBean extends SearchService  {
@@ -17,6 +21,8 @@ class AkkaSearchBean extends SearchService  {
   
   val system =  ActorSystem("search-service")
   
+  def searchActor: ActorRef = system actorFor "search-service-frontend"
+  
   @PostConstruct
   def makeSearchActor = {
     // Startup....
@@ -24,11 +30,16 @@ class AkkaSearchBean extends SearchService  {
     hotels foreach em.detach
     hotels foreach println
     // Now feed data into Akka Search service.
-    null
+    val searchService = system.actorOf(Props[SingleActorSearch], "search-service-frontend")
+    searchService ! IndexHotels(hotels)
   }
   
   override def findHotels(criteria: SearchCriteria): java.util.List[Hotel] = {
-    println("ZOMG SEARCH: " + criteria)
-    null
+    import collection.JavaConverters._
+    import akka.util.Timeout
+    import akka.util.duration._
+    implicit val timeout = Timeout(5 seconds)
+    Await.result((searchActor ? HotelQuery(criteria)).mapTo[Seq[Hotel]], akka.util.Duration.Inf).asJava
   }
 }
+

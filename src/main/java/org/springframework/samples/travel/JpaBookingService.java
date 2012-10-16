@@ -48,19 +48,8 @@ public class JpaBookingService implements BookingService {
 	}
 
 	@Transactional(readOnly = true)
-	@SuppressWarnings("unchecked")
 	public List<Hotel> findHotels(SearchCriteria criteria) {
-		search.findHotels(criteria);
-		
-		String pattern = getSearchPattern(criteria);
-		return em.createQuery(
-				"select h from Hotel h where lower(h.name) like " + pattern
-						+ " or lower(h.city) like " + pattern
-						+ " or lower(h.zip) like " + pattern
-						+ " or lower(h.address) like " + pattern)
-				.setMaxResults(criteria.getPageSize()).setFirstResult(
-						criteria.getPage() * criteria.getPageSize())
-				.getResultList();
+		return search.findHotels(criteria);
 	}
 
 	@Transactional(readOnly = true)

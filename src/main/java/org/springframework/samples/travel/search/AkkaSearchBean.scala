@@ -41,7 +41,11 @@ class AkkaSearchBean extends SearchService  {
     val router = RoundRobinRouter(nrOfInstances=5)
     
     // Create the search actor
-    system.actorOf(searchProps withRouter router , "search-service-frontend")
+    val rawService = system.actorOf(searchProps withRouter router, "search-service-raw")
+    
+    val cacheProps = Props(new QueryCacheActor(rawService, 5))
+    val cached = system.actorOf(cacheProps, "search-service-frontend")
+    ()
   }
   
   @PreDestroy

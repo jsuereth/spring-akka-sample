@@ -7,13 +7,13 @@ import akka.actor.Actor
 class SingleActorSearch(hotels: Seq[Hotel]) extends Actor {
   
   val index: Map[String, Hotel] =
-    (hotels map (hotel => uglySearchString(hotel) -> hotel))(collection.breakOut)
+    (hotels map (hotel => makeSearchableString(hotel) -> hotel))(collection.breakOut)
   
   def receive: Receive = {
     case HotelQuery(search)  => sender ! findHotels(search)
   }
   
-  private def uglySearchString(h: Hotel) =
+  private def makeSearchableString(h: Hotel) =
     (h.getAddress + " " + h.getName + " " + h.getCity + " " + h.getState + " " + h.getZip).toLowerCase
   
   private def findHotels(search: SearchCriteria): HotelResponse = {

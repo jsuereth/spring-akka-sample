@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct
 import akka.pattern.ask
 import akka.dispatch.Await
 import javax.annotation.PreDestroy
+import akka.routing.RoundRobinRouter
 
 
 @Service
@@ -33,7 +34,7 @@ class AkkaSearchBean extends SearchService  {
       hotels
     }
     // Now feed data into Akka Search service.
-    val searchService = system.actorOf(Props(new SingleActorSearch(getHotels)), "search-service-frontend")
+    val searchService = system.actorOf(Props(new SingleActorSearch(getHotels)).withRouter(RoundRobinRouter(nrOfInstances=5)), "search-service-frontend")
   }
   
   @PreDestroy

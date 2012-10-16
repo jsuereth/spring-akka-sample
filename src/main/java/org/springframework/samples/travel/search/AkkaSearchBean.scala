@@ -7,9 +7,9 @@ import javax.persistence.{EntityManager, PersistenceContext}
 import akka.actor._
 import scala.collection.JavaConverters._
 import javax.annotation.PostConstruct
-
 import akka.pattern.ask
 import akka.dispatch.Await
+import javax.annotation.PreDestroy
 
 
 @Service
@@ -21,7 +21,8 @@ class AkkaSearchBean extends SearchService  {
   
   val system =  ActorSystem("search-service")
   
-  def searchActor: ActorRef = system actorFor "search-service-frontend"
+  
+  //def searchActor: ActorRef = system actorFor "search-service-frontend"
   
   @PostConstruct
   def makeSearchActor = {
@@ -34,12 +35,16 @@ class AkkaSearchBean extends SearchService  {
     searchService ! IndexHotels(hotels)
   }
   
+  @PreDestroy
+  def shutdown(): Unit = system.shutdown()
+  
   override def findHotels(criteria: SearchCriteria): java.util.List[Hotel] = {
     import collection.JavaConverters._
     import akka.util.Timeout
     import akka.util.duration._
     implicit val timeout = Timeout(5 seconds)
-    Await.result((searchActor ? HotelQuery(criteria)).mapTo[Seq[Hotel]], akka.util.Duration.Inf).asJava
+    val searchActor = system actorFor (system / "search-service-frontend")
+    Await.result((searchActor ? HotelQuery(criteria)).mapTo[HotelResponse], akka.util.Duration.Inf).hotels.asJava
   }
 }
 

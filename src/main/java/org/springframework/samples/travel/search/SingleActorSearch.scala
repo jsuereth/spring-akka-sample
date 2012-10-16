@@ -5,7 +5,7 @@ import akka.actor.Actor
 
 
 class SingleActorSearch extends Actor {
-  var index = null
+  var index: Seq[Hotel] = Seq.empty
   
   def receive: Receive = {
     case IndexHotels(hotels) => addHotels(hotels)
@@ -13,9 +13,9 @@ class SingleActorSearch extends Actor {
   }
   
   private def findHotels(search: SearchCriteria): HotelResponse = 
-    HotelResponse(Seq.empty)
+    HotelResponse(index)
   
   private def addHotels(hotels: Seq[Hotel]): Unit = {
-    
+    index = hotels
   }
 }

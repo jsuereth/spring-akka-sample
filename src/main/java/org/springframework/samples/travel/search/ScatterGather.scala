@@ -1,7 +1,8 @@
 package org.springframework.samples.travel
 package search
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, Props, ReceiveTimeout}
+import akka.util.duration._
 
 /** The "head" actor for splitting data by country.
  * 
@@ -68,9 +69,15 @@ class Gatherer(listener: ActorRef, numNodes: Long) extends Actor {
   var responses: Seq[HotelResponse] = Seq.empty
     
   def receive: Receive = {
+    case ex: Exception =>
+      listener ! ex
     case response: HotelResponse =>
       responses = responses :+ response
       if(responses.size >= numNodes) joinResponses()
+      else context setReceiveTimeout (1 seconds)
+      
+    case ReceiveTimeout =>
+      joinResponses()
   }
   
   def joinResponses():  Unit = {
@@ -80,4 +87,6 @@ class Gatherer(listener: ActorRef, numNodes: Long) extends Actor {
     context stop self
   }
   
+  
+  context setReceiveTimeout (1 seconds)
 }

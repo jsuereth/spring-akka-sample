@@ -37,11 +37,12 @@ class AkkaSearchBean extends SearchService  {
       hotels
     }
     // Now feed data into Akka Search service.
-    val searchProps = Props(new SingleActorSearch(getHotels))
-    val router = RoundRobinRouter(nrOfInstances=5)
+    //val searchProps = Props(new SingleActorSearch(getHotels))
+    //val router = RoundRobinRouter(nrOfInstances=5)    
+    //val rawService = system.actorOf(searchProps withRouter router, "search-service-raw")
     
-    // Create the search actor
-    val rawService = system.actorOf(searchProps withRouter router, "search-service-raw")
+    val searchTreeProps = Props(new CountryCategoryActor(getHotels))
+    val rawService = system.actorOf(searchTreeProps, "search-tree")
     
     val cacheProps = Props(new QueryCacheActor(rawService, 5))
     val cached = system.actorOf(cacheProps, "search-service-frontend")

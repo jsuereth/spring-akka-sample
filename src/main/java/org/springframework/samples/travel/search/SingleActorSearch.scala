@@ -3,7 +3,7 @@ package search
 
 import akka.actor.Actor
 
-
+/** Note:  This is the *same* as a topic node in the scatter gather algorithm. */
 class SingleActorSearch(hotels: Seq[Hotel]) extends Actor {
   
   val index: Map[String, Hotel] =

@@ -11,18 +11,21 @@ import akka.pattern.ask
 import akka.dispatch.Await
 import javax.annotation.PreDestroy
 import akka.routing.RoundRobinRouter
-
+import collection.JavaConverters._
+import akka.util.Timeout
+import akka.util.duration._
 
 @Service
 @Singleton
 class AkkaSearchBean extends SearchService  {
-  
+  /** The entity manager for this bean. */
   @(PersistenceContext @annotation.target.setter)
   var em: EntityManager = null
   
+  /** The ActorSystem that runs under this bean. */
   val system =  ActorSystem("search-service")
   
-  
+  /** Returns the current search service front-end actor. */
   def searchActor: ActorRef = system actorFor (system / "search-service-frontend")
   
   @PostConstruct
@@ -34,18 +37,20 @@ class AkkaSearchBean extends SearchService  {
       hotels
     }
     // Now feed data into Akka Search service.
-    val searchService = system.actorOf(Props(new SingleActorSearch(getHotels)).withRouter(RoundRobinRouter(nrOfInstances=5)), "search-service-frontend")
+    val searchProps = Props(new SingleActorSearch(getHotels))
+    val router = RoundRobinRouter(nrOfInstances=5)
+    
+    // Create the search actor
+    system.actorOf(searchProps withRouter router , "search-service-frontend")
   }
   
   @PreDestroy
   def shutdown(): Unit = system.shutdown()
   
   override def findHotels(criteria: SearchCriteria): java.util.List[Hotel] = {
-    import collection.JavaConverters._
-    import akka.util.Timeout
-    import akka.util.duration._
     implicit val timeout = Timeout(5 seconds)
-    Await.result((searchActor ? HotelQuery(criteria)).mapTo[HotelResponse], akka.util.Duration.Inf).hotels.asJava
+    val response = (searchActor ? HotelQuery(criteria)).mapTo[HotelResponse]
+    Await.result(response, akka.util.Duration.Inf).hotels.asJava
   }
 }
 

@@ -2,6 +2,7 @@ package org.springframework.samples.travel;
 
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
@@ -21,10 +22,16 @@ import org.springframework.util.StringUtils;
 public class JpaBookingService implements BookingService {
 
 	private EntityManager em;
+	private SearchService search;
 
 	@PersistenceContext
 	public void setEntityManager(EntityManager em) {
 		this.em = em;
+	}
+	
+	@Inject
+	public void setAkkaSearchService(SearchService search) {
+		this.search = search;
 	}
 
 	@Transactional(readOnly = true)
@@ -43,6 +50,8 @@ public class JpaBookingService implements BookingService {
 	@Transactional(readOnly = true)
 	@SuppressWarnings("unchecked")
 	public List<Hotel> findHotels(SearchCriteria criteria) {
+		search.findHotels(criteria);
+		
 		String pattern = getSearchPattern(criteria);
 		return em.createQuery(
 				"select h from Hotel h where lower(h.name) like " + pattern

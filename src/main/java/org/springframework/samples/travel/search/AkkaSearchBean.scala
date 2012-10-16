@@ -44,7 +44,10 @@ class AkkaSearchBean extends SearchService  {
     val searchTreeProps = Props(new CountryCategoryActor(getHotels))
     val rawService = system.actorOf(searchTreeProps, "search-tree")
     
-    val cacheProps = Props(new QueryCacheActor(rawService, 5))
+    val failWhaleProps = Props(new FailWhaleActor(rawService))
+    val failWhale = system.actorOf(failWhaleProps, "auto-timeout-handler")
+    
+    val cacheProps = Props(new QueryCacheActor(failWhale, 5))
     val cached = system.actorOf(cacheProps, "search-service-frontend")
     ()
   }

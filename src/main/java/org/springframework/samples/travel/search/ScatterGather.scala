@@ -20,7 +20,7 @@ class CountryCategoryActor(hotels: Seq[Hotel]) extends CategoryActor(hotels) {
  */
 class CityCategoryActor(hotels: Seq[Hotel]) extends CategoryActor(hotels) {
   protected def category(hotel: Hotel): String = 
-    Option(hotel) map(_.getCity) getOrElse ""
+    Option(hotel.getCity) getOrElse ""
   protected def newChild(hotels: Seq[Hotel]): Actor =
     new SingleActorSearch(hotels)
 }

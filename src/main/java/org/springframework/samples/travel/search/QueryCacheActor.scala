@@ -23,7 +23,7 @@ class QueryCacheActor(service: ActorRef, cachedQueries: Int) extends Actor {
           service.tell(HotelQuery(query), interceptor)
         // Query is cached.
         case cached =>
-          println("[][] RETURNING CACHED: " + queryString)
+           println("[][][] RETURNING CACHED: " + queryString + " [][][]")
            sender ! cached
       }
     case UpdateQueryCache(query, response) =>

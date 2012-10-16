@@ -22,17 +22,18 @@ class AkkaSearchBean extends SearchService  {
   val system =  ActorSystem("search-service")
   
   
-  //def searchActor: ActorRef = system actorFor "search-service-frontend"
+  def searchActor: ActorRef = system actorFor (system / "search-service-frontend")
   
   @PostConstruct
   def makeSearchActor = {
     // Startup....
-    val hotels = em.createQuery("select h from Hotel h").getResultList.asInstanceOf[java.util.List[Hotel]].asScala
-    hotels foreach em.detach
-    hotels foreach println
+    def getHotels = {
+      val hotels = em.createQuery("select h from Hotel h").getResultList.asInstanceOf[java.util.List[Hotel]].asScala
+      hotels foreach em.detach
+      hotels
+    }
     // Now feed data into Akka Search service.
-    val searchService = system.actorOf(Props[SingleActorSearch], "search-service-frontend")
-    searchService ! IndexHotels(hotels)
+    val searchService = system.actorOf(Props(new SingleActorSearch(getHotels)), "search-service-frontend")
   }
   
   @PreDestroy
@@ -43,7 +44,6 @@ class AkkaSearchBean extends SearchService  {
     import akka.util.Timeout
     import akka.util.duration._
     implicit val timeout = Timeout(5 seconds)
-    val searchActor = system actorFor (system / "search-service-frontend")
     Await.result((searchActor ? HotelQuery(criteria)).mapTo[HotelResponse], akka.util.Duration.Inf).hotels.asJava
   }
 }

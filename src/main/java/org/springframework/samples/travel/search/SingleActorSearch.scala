@@ -4,18 +4,23 @@ package search
 import akka.actor.Actor
 
 
-class SingleActorSearch extends Actor {
-  var index: Seq[Hotel] = Seq.empty
+class SingleActorSearch(hotels: Seq[Hotel]) extends Actor {
+  
+  val index: Map[String, Hotel] =
+    (hotels map (hotel => uglySearchString(hotel) -> hotel))(collection.breakOut)
   
   def receive: Receive = {
-    case IndexHotels(hotels) => addHotels(hotels)
     case HotelQuery(search)  => sender ! findHotels(search)
   }
   
-  private def findHotels(search: SearchCriteria): HotelResponse = 
-    HotelResponse(index)
+  private def uglySearchString(h: Hotel) =
+    (h.getAddress + " " + h.getName + " " + h.getCity + " " + h.getState + " " + h.getZip).toLowerCase
   
-  private def addHotels(hotels: Seq[Hotel]): Unit = {
-    index = hotels
+  private def findHotels(search: SearchCriteria): HotelResponse = {
+    val matched = for {
+      (s, hotel) <- index
+      if s contains search.getSearchString.toLowerCase
+    } yield hotel
+    HotelResponse(matched.toSeq)
   }
 }

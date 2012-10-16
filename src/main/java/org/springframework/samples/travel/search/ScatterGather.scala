@@ -77,7 +77,7 @@ class Gatherer(listener: ActorRef, numNodes: Long) extends Actor {
       else context setReceiveTimeout (1 seconds)
       
     case ReceiveTimeout =>
-      joinResponses()
+      listener ! new Exception("GATHERER - Query did not return!")
   }
   
   def joinResponses():  Unit = {

@@ -31,8 +31,12 @@ public class HotelsController {
 
 	@RequestMapping(value = "/hotels", method = RequestMethod.GET)
 	public String list(SearchCriteria criteria, Model model) {
-		List<Hotel> hotels = bookingService.findHotels(criteria);
-		model.addAttribute(hotels);
+		try {
+		  List<Hotel> hotels = bookingService.findHotels(criteria);
+		  model.addAttribute(hotels);
+		} catch(Exception e) {
+			model.addAttribute("failwhale", true);
+		}
 		return "hotels/list";
 	}
 

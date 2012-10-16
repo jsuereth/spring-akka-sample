@@ -15,6 +15,9 @@
 	</script>
 </p>
 <div id="hotelResults">
+<c:if test="${failwhale}">
+  <h3>WHOOPS!   Looks like our search service is down, or your query was made of spaghetti (YUM!).  Please try again soon. </h3>
+</c:if>
 <c:if test="${not empty hotelList}">
 	<table class="summary">
 		<thead>

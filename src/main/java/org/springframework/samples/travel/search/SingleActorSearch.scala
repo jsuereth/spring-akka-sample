@@ -28,6 +28,6 @@ class SingleActorSearch(hotels: Seq[Hotel]) extends Actor {
   
   
   override def preRestart(error: Throwable, msg: Option[Any]): Unit =
-    println("restarting after exception on message: " + msg)
+    println("[][][] restarting after exception on message: " + msg + " [][][]")
   
 }

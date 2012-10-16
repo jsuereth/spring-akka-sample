@@ -57,8 +57,11 @@ class AkkaSearchBean extends SearchService  {
   
   override def findHotels(criteria: SearchCriteria): java.util.List[Hotel] = {
     implicit val timeout = Timeout(5 seconds)
-    val response = (searchActor ? HotelQuery(criteria)).mapTo[HotelResponse]
-    Await.result(response, akka.util.Duration.Inf).hotels.asJava
+    val response = (searchActor ? HotelQuery(criteria))
+    Await.result(response, akka.util.Duration.Inf) match {
+      case response: HotelResponse => response.hotels.asJava
+      case ex: Exception => throw ex
+    }
   }
 }
 

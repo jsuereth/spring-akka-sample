@@ -48,6 +48,10 @@ class FailWhaleActor(service: ActorRef) extends Actor {
  */
 class FailureInterceptor(detector: ActorRef, listener: ActorRef) extends Actor {
   def receive: Receive = {
+    case ex: Exception =>
+      detector ! QueryFail
+      listener ! ex
+      context stop self
     case response: HotelResponse =>
       listener ! response
       detector ! QueryOk
